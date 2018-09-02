@@ -1,0 +1,136 @@
+---
+title: "GetPlayerPlayingminutesPosition"
+output: html_document
+---
+
+```{r}
+#Start-off and get a picture of what it looks like
+game.id <- c("291172&league=289234", "292573&league=289234", "291170&league=289234", "291183&league=289234",
+             "291182&league=289234", "291184&league=289234", "292295&league=289234", "282895&league=282881",
+             "289758&league=289234", "292286&league=289234", "292941&league=289234", "292736&league=289234",
+             "292735&league=289234")[-c(7,10)]
+filenames <- paste0(game.id, ".csv")
+commentary.df <- rbind(read.csv(filenames[1]), read.csv(filenames[2]), read.csv(filenames[3]), read.csv(filenames[4]),
+      read.csv(filenames[5]), read.csv(filenames[6]), read.csv(filenames[7]), read.csv(filenames[8]),
+      read.csv(filenames[9]), read.csv(filenames[10]), read.csv(filenames[11]))
+caps.df <- read.csv("names.caps.csv")
+```
+We notice the commentary data uses full names, eg "Yu Tamura", 
+whereas the names.caps data uses a letter for the first name, eg "Y Tamura". 
+
+Therefore, use the player names' last names only. (Cutting down first names won't help because of players such as MG Leitch)
+
+```{r}
+#commentary.df clean up as described above
+player.names <- as.character(commentary.df$player)
+space.pos <- regexpr("[[:space:]]", player.names)
+commentary.df$player <- substr(player.names, space.pos+1, nchar(player.names))
+head(commentary.df,10)
+
+#caps.df clean up as described above
+player.names <- as.character(caps.df$names)
+space.pos <- regexpr("[[:space:]]", player.names)
+caps.df$names <- substr(player.names, space.pos+1, nchar(player.names))
+head(caps.df, 10)
+```
+
+
+All players' minutes start at 80*caps
+
+If you are substituted on the nth minute, you lose n minutes
+
+If you are substituted off the nth miute, you lose 80-n minutes
+
+
+```{r}
+#Setup the dataframes
+minutes.df <- data.frame(caps.df[,2], caps.df[,3]*80) # All players' minutes set at 80*caps minutes
+commentary.teams <- as.character(commentary.df[,3])
+commentary.df <- commentary.df[commentary.teams == "Japan",] #subset commentary.df on Japan
+commentary.events <- as.character(commentary.df[,5])
+subon.df <- commentary.df[commentary.events == "Substitute on",] #dataframe for sub-on data
+suboff.df <- commentary.df[commentary.events == "Player substituted",] #dataframe for sub-off data
+
+minutes.df
+head(subon.df, 10)
+head(suboff.df, 10)
+```
+
+```{r}
+#Adjust the minutes by:
+#If you are substituted on the nth minute, you lose n minutes
+#If you are substituted off the nth miute, you lose 80-n minutes
+
+#Function that uses subon.df to adjust minutes.df
+for(i in 1:nrow(subon.df)){
+  subon.player <- subon.df$player[i] #player being commentated
+  player.row.index <- which(minutes.df[,1] == subon.player) #row index of player being commentated
+  minutes.df[player.row.index,2] <- minutes.df[player.row.index,2] - subon.df[i,2] #lose n minutes
+}
+minutes.df
+```
+
+Function that uses subon.df to adjust minutes.df
+
+```{r}
+#Function that uses suboff.df to adjust minutes.df
+for(i in 1:nrow(suboff.df)){
+  suboff.player <- suboff.df$player[i] #player being commentated
+  player.row.index <- which(minutes.df[,1] == suboff.player) #row index of player being commentated
+  minutes.df[player.row.index,2] <- minutes.df[player.row.index,2] + suboff.df[i,2] - 80 #lose 80-n minutes
+}
+minutes.df
+```
+
+Potential bugs found (those who are have total minutes that are multiples of 80 OR minus minutes):
+
+```{r}
+#80 multiple minutes
+
+#Leitch - Captain and 9 starts from 9
+
+#Lomano Lava - referred to as Lemeki by commentators instead
+subon.df[subon.df$player == "Lemeki",]
+suboff.df[suboff.df$player == "Lemeki",]
+#Manually impute Lomano Lava
+player.index <- minutes.df[,1] == "Lomano Lava"
+minutes.df[player.index,2] <- 164 - 31
+
+#Anisi - referred to as Anise by commentators instead
+subon.df[subon.df$player == "Anise",]
+suboff.df[suboff.df$player == "Anise",]
+#Manually impute Lomano Lava
+player.index <- minutes.df[,1] == "Anisi"
+minutes.df[player.index,2] <- 91
+  
+#Fetuani - referred to as Lautami by commentators instead
+subon.df[subon.df$player == "Lautami",]
+suboff.df[suboff.df$player == "Lautami",]
+#Manually impute Lomano Lava
+player.index <- minutes.df[,1] == "Fetuani"
+minutes.df[player.index,2] <- 42
+
+#Valu - referred to as Ai Valu by commentators instead
+subon.df[subon.df$player == "Ai Valu",]
+suboff.df[suboff.df$player == "Ai Valu",]
+#Manually impute Lomano Lava
+player.index <- minutes.df[,1] == "Valu"
+minutes.df[player.index,2] <- 77
+
+#Kajikawa - 80 minute lock against Georgia and Wales in 2016
+
+#Minus minutes - more than 2 caps
+subon.df[subon.df$player == "Lotoahea",]
+suboff.df[suboff.df$player == "Lotoahea",]
+#Manually impute Lomano Lava
+player.index <- minutes.df[,1] == "Lotoahea"
+minutes.df[player.index,2] <- 102
+
+minutes.df
+```
+
+Notice the Tanaka + Nagare + Uchida adds up to a perfect 880
+
+```{r}
+write.csv(minutes.df, "minutes.csv")
+```

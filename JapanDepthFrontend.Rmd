@@ -1,0 +1,96 @@
+---
+title: "JapanDepthFrontend"
+output: html_document
+---
+
+
+```{r}
+df <- read.csv("minutes.csv")[,-c(1)]
+str(df)
+
+#Grouped positions:
+#2nd/3rd Row
+SecondThirdRow.df <- df[df$Position == "SBR",] #subset for the position
+SecondThirdRow.df.sorted <- SecondThirdRow.df[order(-SecondThirdRow.df$Minutes),] #descending order of minutes played
+SecondThirdRow.df.sorted$Name
+SecondThirdRow.minutes <- c(sum(SecondThirdRow.df.sorted$Minutes[c(1,2,3,4)]), #first choice players' minutes summed
+                            sum(SecondThirdRow.df.sorted$Minutes[c(5,6,7,8)]), #second choice players' minutes summed
+                            sum(SecondThirdRow.df.sorted$Minutes[9:nrow(SecondThirdRow.df.sorted)])) 
+                            #third choice players' minutes summed
+#Fly Half/Centre
+FlyHalfCentre.df <- df[df$Position == "FHC",] #subset for the position
+FlyHalfCentre.df.sorted <- FlyHalfCentre.df[order(-FlyHalfCentre.df$Minutes),] #descending order of minutes played
+FlyHalfCentre.df.sorted$Name
+FlyHalfCentre.minutes <- c(sum(FlyHalfCentre.df.sorted$Minutes[c(1,2)]), #first choice players' minutes summed
+                            sum(FlyHalfCentre.df.sorted$Minutes[c(3,4)]), #second choice players' minutes summed
+                            sum(FlyHalfCentre.df.sorted$Minutes[5:nrow(FlyHalfCentre.df.sorted)])) 
+#third choice players' minutes summed
+
+#Back Three
+BackThree.df <- df[df$Position == "BT",] #subset for the position
+BackThree.df.sorted <- BackThree.df[order(-BackThree.df$Minutes),] #descending order of minutes played
+BackThree.df.sorted$Name
+BackThree.minutes <- c(sum(BackThree.df.sorted$Minutes[c(1,2)]), #first choice players' minutes summed
+                            sum(BackThree.df.sorted$Minutes[c(3,4)]), #second choice players' minutes summed
+                            sum(BackThree.df.sorted$Minutes[5:nrow(BackThree.df.sorted)])) 
+#third choice players' minutes summed
+
+#Individual positions:
+#Loosehead
+Loosehead.df <- df[df$Position == "LP",] #subset for the position
+Loosehead.df.sorted <- Loosehead.df[order(-Loosehead.df$Minutes),] #descending order of minutes played
+Loosehead.df.sorted$Name
+Loosehead.minutes <- Loosehead.df.sorted$Minutes[1:3]
+
+#Hooker
+Hooker.df <- df[df$Position == "H",] #subset for the position
+Hooker.df.sorted <- Hooker.df[order(-Hooker.df$Minutes),] #descending order of minutes played
+Hooker.df.sorted$Name
+Hooker.minutes <- Hooker.df.sorted$Minutes[1:3]
+
+#Tighthead
+Tighthead.df <- df[df$Position == "TP",] #subset for the position
+Tighthead.df.sorted <- Tighthead.df[order(-Tighthead.df$Minutes),] #descending order of minutes played
+Tighthead.df.sorted$Name
+Tighthead.minutes <- Tighthead.df.sorted$Minutes[1:3]
+
+#Scrum Half
+ScrumHalf.df <- df[df$Position == "SH",] #subset for the position
+ScrumHalf.df.sorted <- ScrumHalf.df[order(-ScrumHalf.df$Minutes),] #descending order of minutes played
+ScrumHalf.df.sorted$Name
+ScrumHalf.minutes <- ScrumHalf.df.sorted$Minutes[1:3]
+
+#Merge the minutes into one matrix
+minutes.matrix <- cbind(Loosehead.minutes/sum(Loosehead.minutes), 
+                        Hooker.minutes/sum(Hooker.minutes), 
+                        Tighthead.minutes/sum(Tighthead.minutes), 
+                        SecondThirdRow.minutes/sum(SecondThirdRow.minutes), 
+                        ScrumHalf.minutes/sum(ScrumHalf.minutes), 
+                        FlyHalfCentre.minutes/sum(FlyHalfCentre.minutes), 
+                        BackThree.minutes/sum(BackThree.minutes)) 
+#The actual individual positions are being recycled, but shouldn't be a worry for the full-scale version
+
+position.names <- c("1", "2", "3", "4 - 8", "9", "FH&C", "W&FB")
+
+str(minutes.matrix)
+```
+
+Mimic the stacked bar chart:
+https://plot.ly/r/bar-charts/
+
+```{r}
+#Make three stacked bar charts
+library(plotly)
+
+#start of with first choice players:
+p <- plot_ly(df, x = as.factor(position.names), y = ~minutes.matrix[3,], type = 'bar', name = "Third Choice") %>%
+  
+  #second and third choice players:
+  add_trace(y = ~minutes.matrix[2,], name = "Second Choice") %>%
+  add_trace(y = ~minutes.matrix[1,], name = "First Choice") %>%
+  
+  #finish off:
+  layout(yaxis = list(title = 'Caps proportion'), barmode = 'stack')
+
+p
+```

@@ -1,0 +1,121 @@
+---
+title: "Loopover Backend P2 and P3"
+output: html_document
+---
+
+```{r}
+link.prefix <- "http://www.espn.co.uk/rugby/commentary?gameId="
+game.id <- c("291172&league=289234", "292573&league=289234", "291170&league=289234", "291183&league=289234",
+             "291182&league=289234", "291184&league=289234", "292295&league=289234", "282895&league=282881",
+             "289758&league=289234", "292286&league=289234", "292941&league=289234", "292736&league=289234",
+             "292735&league=289234")
+
+#remove the two matches with no commentary data:
+game.id <- game.id[-c(7,10)]
+links <- paste0(link.prefix, game.id)
+
+library(rvest)
+
+#Loop opens
+for (j in 1:length(links)){
+  html.string.vector <- readLines(links[j])
+
+start.of.1stH.element.index <- grep("Start of first half", html.string.vector)[1]
+#first string was selected because the "0-0" was found easily unlike on the second string
+string.to.scrape <- html.string.vector[start.of.1stH.element.index]
+
+#Substring the string.to.scrape from the "End of second half" and the "Start of first half"
+start.position <- gregexpr("End of second half", string.to.scrape)
+end.position <- gregexpr("Start of first half", string.to.scrape)
+substring.to.scrape <- substr(string.to.scrape, start.position, end.position)
+
+#TEST CASE 1:
+
+#&#x27;
+#The code above indicates the ' straight after the minute number
+test1 <- length(gregexpr("&#x27;", substring.to.scrape)[[1]])
+test1
+#test is passed (i.e. length is and should be 50) for
+#because there are 67 ' (dashes) on the page including:
+#15 on the scoreboard, 1 for the "End of Second Half" and 1 on the blue bubble speech on the top right
+
+string.vector.to.scrape <- strsplit(substring.to.scrape, "&#x27;")[[1]][-c(test1+1)]
+#split the string into a vector of strings
+#remove the last element because this just indicates the "Start of First Half"
+
+#GET COLUMN ONE: minutes
+
+#Get the minutes, ignore the last element's minute because it's just the Start of First Half time
+lengths.of.string.vector.to.scrape <- nchar(string.vector.to.scrape)
+minutes <- substr(string.vector.to.scrape, lengths.of.string.vector.to.scrape-1, lengths.of.string.vector.to.scrape)[-c(test1)]
+
+#In this case, this step is unnecessary, but is necessary if there are events during the 1st-9th minute
+if(length(grep("\\D", minutes)) > 0){
+  minutes[grep("\\D", minutes)] <- substr(minutes[grep("\\D", minutes)], 2,2)
+  print("events happened during the 1st-9th minute")
+} else {
+  print("no events during the 1st-9th minute")
+}
+
+minutes <- as.integer(minutes)
+minutes
+
+#GET COLUMN TWO, THREE AND FOUR: team, players and events
+
+#Firstly, get the commentary quotes
+
+#"</td></tr><tr data-reactid"
+#The code above always comes straight after the commentary quote
+commentary.end.pos <- unlist(gregexpr("</td></tr><tr data-reactid", string.vector.to.scrape)) - 1
+commentaries.at.ends <- substr(string.vector.to.scrape, 1,commentary.end.pos)[-c(1)]
+#First element is just "End of Second half"
+
+#"game-details"
+#The code above always comes some point before the commentary quote
+game.details.start.pos <- unlist(gregexpr("game-details", commentaries.at.ends))
+commentaries.at.ends2 <- substr(commentaries.at.ends, game.details.start.pos, nchar(commentaries.at.ends))
+
+#An upper case latter comes at the very start of commentary quote
+commentary.start.pos <- unlist(regexpr("[[:upper:]]", commentaries.at.ends2))
+commentary.quotes <- substr(commentaries.at.ends2, commentary.start.pos, nchar(commentaries.at.ends2))
+
+#GET COLUMN TWO, THREE AND FOUR: team, players and events
+
+#Now get team, players and events wtih removal
+#"End of first half" and "Start of second half" from minutes object and the commentary quotes
+
+#TEST CASE 2:
+
+#Notice how the commentary quotes are templated by:
+#"[event] - [player] , [team]"
+team.with.EndOfFirstHalf <- unlist(strsplit(commentary.quotes, " , "))[c(FALSE, TRUE)]
+event.player.with.StartOfSecondHalf <- unlist(strsplit(commentary.quotes, " , "))[c(TRUE,FALSE)]
+
+#Remove EndOfFirstHalf and StartOfSecondHalf
+end.of.first.half.index <- which(team.with.EndOfFirstHalf == "End of first half")
+start.of.second.half.index <- which(event.player.with.StartOfSecondHalf == "Start of second half")
+
+#clean-up team
+team <- team.with.EndOfFirstHalf[-end.of.first.half.index]
+
+#clean-up event.players
+event.player <- event.player.with.StartOfSecondHalf[-start.of.second.half.index]
+
+#clean-up minutes
+x <- unlist(strsplit(commentary.quotes, " , "))
+start.of.second.half.index <- (which(x == "Start of second half")-1) / 2
+minutes <- minutes[-c(start.of.second.half.index, start.of.second.half.index+1)]
+
+#check if it matches the website info
+head(cbind(minutes, event.player))
+tail(cbind(minutes, event.player))
+
+event <- unlist(strsplit(event.player, " - "))[c(TRUE,FALSE)]
+player <- unlist(strsplit(event.player, " - "))[c(FALSE,TRUE)]
+
+data.frame <- data.frame(as.integer(minutes), team, player, event)
+
+write.csv(data.frame, paste0(game.id[j], ".csv"))
+
+}
+```
