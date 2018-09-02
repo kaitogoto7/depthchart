@@ -90,7 +90,7 @@ p <- plot_ly(df, x = as.factor(position.names), y = ~minutes.matrix[3,], type = 
   add_trace(y = ~minutes.matrix[1,], name = "First Choice") %>%
   
   #finish off:
-  layout(yaxis = list(title = 'Caps proportion'), barmode = 'stack')
+  layout(yaxis = list(title = 'Game minutes proportion'), barmode = 'stack')
 
 p
 ```
