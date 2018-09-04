@@ -92,28 +92,28 @@ Potential bugs found (those who are have total minutes that are multiples of 80 
 #Lomano Lava - referred to as Lemeki by commentators instead
 subon.df[subon.df$player == "Lemeki",]
 suboff.df[suboff.df$player == "Lemeki",]
-#Manually impute Lomano Lava
+#Manually impute
 player.index <- minutes.df[,1] == "Lomano Lava"
 minutes.df[player.index,2] <- 164 - 31
 
 #Anisi - referred to as Anise by commentators instead
 subon.df[subon.df$player == "Anise",]
 suboff.df[suboff.df$player == "Anise",]
-#Manually impute Lomano Lava
+#Manually impute
 player.index <- minutes.df[,1] == "Anisi"
 minutes.df[player.index,2] <- 91
   
 #Fetuani - referred to as Lautami by commentators instead
 subon.df[subon.df$player == "Lautami",]
 suboff.df[suboff.df$player == "Lautami",]
-#Manually impute Lomano Lava
+#Manually impute
 player.index <- minutes.df[,1] == "Fetuani"
 minutes.df[player.index,2] <- 42
 
 #Valu - referred to as Ai Valu by commentators instead
 subon.df[subon.df$player == "Ai Valu",]
 suboff.df[suboff.df$player == "Ai Valu",]
-#Manually impute Lomano Lava
+#Manually impute
 player.index <- minutes.df[,1] == "Valu"
 minutes.df[player.index,2] <- 77
 
@@ -122,7 +122,7 @@ minutes.df[player.index,2] <- 77
 #Minus minutes - more than 2 caps
 subon.df[subon.df$player == "Lotoahea",]
 suboff.df[suboff.df$player == "Lotoahea",]
-#Manually impute Lomano Lava
+#Manually impute
 player.index <- minutes.df[,1] == "Lotoahea"
 minutes.df[player.index,2] <- 102
 
