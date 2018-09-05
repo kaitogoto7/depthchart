@@ -1,5 +1,7 @@
 # depthchart
 
+To update these codes: Firstly, add test matches' game id's and Secondly, edit the query page used to get the number of caps for each player out of the matches concerned.
+
 Step 1: Run the "GetCommentaryTimeline.Rmd" to get the timeline data
 
 Step 2: Run the "CapsOfTimelineMatches.Rmd" to get which players played how many games of the 11 matches with commentary data.
