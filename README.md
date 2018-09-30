@@ -7,6 +7,7 @@ Step 1: Run the "GetCommentaryTimeline.Rmd" to get the timeline data
 Step 2: Run the "CapsOfTimelineMatches.Rmd" to get which players played how many games of the 11 matches with commentary data.
 
 Step 3 (Run GetPlayerPlayingminutesPositions.Rmd): Integrate the two data frames created to get the number of minutes each player played for the 11 matches with commentary data.
+Assumption: All players have different surnames
 
 Step 4: Manually impute each player's position.
 
