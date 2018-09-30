@@ -15,4 +15,4 @@ Step 5 (Run JapanDepthFrontend.Rmd): Use the PlayerPlayingminutesPosition data w
 
 Step 6: Upload the chart on plotly (deliberately not coded on front end code)
 
-The final plot: https://plot.ly/~kaitogoto7/5/
+The final chart and analysis: http://the1014.com/jamie-josephs-depth-chart/
