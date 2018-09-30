@@ -14,3 +14,5 @@ Step 4: Manually impute each player's position.
 Step 5 (Run JapanDepthFrontend.Rmd): Use the PlayerPlayingminutesPosition data with the "JapanDepthFrontend.Rmd" to build the full-scale depth chart.
 
 Step 6: Upload the chart on plotly (deliberately not coded on front end code)
+
+The final plot: https://plot.ly/~kaitogoto7/5/
