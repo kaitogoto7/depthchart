@@ -1,5 +1,7 @@
 # depthchart
 
+The final chart and analysis: http://the1014.com/jamie-josephs-depth-chart/
+
 To update these codes: Firstly, add test matches' game id's and Secondly, edit the query page used to get the number of caps for each player out of the matches concerned.
 
 Step 1: Run the "GetCommentaryTimeline.Rmd" to get the timeline data
@@ -14,5 +16,3 @@ Step 4: Manually impute each player's position.
 Step 5 (Run JapanDepthFrontend.Rmd): Use the PlayerPlayingminutesPosition data with the "JapanDepthFrontend.Rmd" to build the full-scale depth chart.
 
 Step 6: Upload the chart on plotly (deliberately not coded on front end code)
-
-The final chart and analysis: http://the1014.com/jamie-josephs-depth-chart/
