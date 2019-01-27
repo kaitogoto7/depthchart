@@ -1,6 +1,7 @@
 # depthchart
 
 The final chart and analysis: http://the1014.com/jamie-josephs-depth-chart/
+The webpages scraped are from espnscrum statsguru
 
 To update these codes: Firstly, add test matches' game id's and Secondly, edit the query page used to get the number of caps for each player out of the matches concerned.
 
